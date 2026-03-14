@@ -9,7 +9,7 @@
    ========================================================================== */
 
 /** Die 3 konfigurierbaren Teammitglieder */
-export const TEAM_MEMBERS = ["Leonie", "Moritz", "Tobias"];
+export const TEAM_MEMBERS = ["Team-Member 1", "Team-Member 2", "Team-Member 3"];
 
 /** Die Dimensions-Keys */
 export type DimensionKey =
