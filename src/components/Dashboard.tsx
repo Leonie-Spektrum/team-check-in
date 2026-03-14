@@ -1,10 +1,10 @@
 /* ==========================================================================
    DASHBOARD
-   Aktuelle Woche: Kachel-Übersicht (6 Dim × 3 Personen)
+   Aktuelle Woche: Kachel-Übersicht
    Verlauf: Mini-Trend (letzte 8 Wochen)
    ========================================================================== */
 
-import React, { useMemo, useRef } from "react";
+import React, { useMemo } from "react";
 import {
   TEAM_MEMBERS,
   DIMENSIONS,
@@ -15,19 +15,8 @@ import {
   getAllEntries,
   getCurrentWeek,
   getLast8Weeks,
-  exportJSON,
-  importJSON,
-  fillDemoData,
-  clearAllData,
 } from "@/lib/storage";
 import { DimensionIconSmall } from "./DimensionSelectors";
-
-/* ==========================================================================
-   FARBCODES für Ampellogik
-   --traffic-red:    hsl(0, 70%, 55%)
-   --traffic-orange: hsl(35, 90%, 55%)
-   --traffic-green:  hsl(145, 55%, 42%)
-   ========================================================================== */
 
 const trafficHsl: Record<string, string> = {
   red: "hsl(0, 70%, 55%)",
@@ -46,63 +35,17 @@ interface DashboardProps {
 }
 
 const Dashboard: React.FC<DashboardProps> = ({ refreshKey }) => {
-  const fileRef = useRef<HTMLInputElement>(null);
-  const [, setForce] = React.useState(0);
-  const forceRefresh = () => setForce((f) => f + 1);
-
   const currentWeek = getCurrentWeek();
   const weeks = useMemo(() => getLast8Weeks(currentWeek), [currentWeek]);
   const entries = useMemo(() => getAllEntries(), [refreshKey]);
 
   const getVal = (person: string, week: string, dim: DimensionKey): number | null => {
     const e = entries.find((x) => x.person === person && x.week === week);
-    return e ? e.dimensions[dim] : null;
-  };
-
-  const handleImport = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    try {
-      const count = await importJSON(file);
-      alert(`${count} Einträge importiert!`);
-      forceRefresh();
-    } catch {
-      alert("Import fehlgeschlagen – ungültiges Format.");
-    }
-    e.target.value = "";
-  };
-
-  const handleDemo = () => {
-    fillDemoData(currentWeek);
-    forceRefresh();
-  };
-
-  const handleClear = () => {
-    if (confirm("Alle Daten löschen?")) {
-      clearAllData();
-      forceRefresh();
-    }
+    return e ? (e.dimensions[dim] ?? null) : null;
   };
 
   return (
     <div className="max-w-3xl mx-auto px-4 py-6 space-y-8">
-      {/* Toolbar */}
-      <div className="flex flex-wrap gap-2 justify-center">
-        <button onClick={exportJSON} className="btn-secondary text-xs">
-          📥 JSON Export
-        </button>
-        <button onClick={() => fileRef.current?.click()} className="btn-secondary text-xs">
-          📤 JSON Import
-        </button>
-        <input ref={fileRef} type="file" accept=".json" onChange={handleImport} className="hidden" aria-label="JSON importieren" />
-        <button onClick={handleDemo} className="btn-secondary text-xs">
-          🎲 Demo-Daten
-        </button>
-        <button onClick={handleClear} className="btn-secondary text-xs text-destructive">
-          🗑 Löschen
-        </button>
-      </div>
-
       {/* Current Week Overview */}
       <section>
         <h2 className="text-lg font-bold text-foreground mb-3">
@@ -214,8 +157,8 @@ const MiniTrend: React.FC<{
   const points = values
     .map((v, i) => {
       if (v === null) return null;
-      const x = padX + (i / (weeks.length - 1)) * (w - 2 * padX);
-      const y = padY + ((max - v) / (max - 1)) * (h - 2 * padY);
+      const x = padX + (i / Math.max(weeks.length - 1, 1)) * (w - 2 * padX);
+      const y = padY + ((max - v) / Math.max(max - 1, 1)) * (h - 2 * padY);
       return { x, y, v };
     })
     .filter(Boolean) as { x: number; y: number; v: number }[];
@@ -224,20 +167,14 @@ const MiniTrend: React.FC<{
     <div className="card-elevated p-2">
       <div className="text-[10px] text-muted-foreground font-medium mb-1">{label}</div>
       <svg width="100%" viewBox={`0 0 ${w} ${h}`} aria-label={`${label} Trend`}>
-        {/* Grid line */}
         <line x1={padX} y1={h / 2} x2={w - padX} y2={h / 2} stroke="hsl(210,15%,90%)" strokeWidth="1" />
-        {/* Line */}
         {points.length > 1 && (
           <polyline
             points={points.map((p) => `${p.x},${p.y}`).join(" ")}
-            fill="none"
-            stroke="hsl(172,50%,45%)"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
+            fill="none" stroke="hsl(172,50%,45%)" strokeWidth="2"
+            strokeLinecap="round" strokeLinejoin="round"
           />
         )}
-        {/* Dots */}
         {points.map((p, i) => (
           <circle key={i} cx={p.x} cy={p.y} r="3" fill="hsl(172,50%,40%)" />
         ))}
