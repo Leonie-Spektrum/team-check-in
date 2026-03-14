@@ -7,6 +7,13 @@
 
 import { CheckInEntry, TEAM_MEMBERS, DIMENSIONS, DimensionKey } from "./types";
 
+/** Default-Werte für alle Dimensionen */
+const DEFAULT_DIM_VALUES: Record<DimensionKey, number> = {
+  auslastung: 5, stress: 3, energie: 3,
+  zufriedenheit: 3, aufgabenart: 3, klarheit: 3,
+  teamSupport: 3, teamleadX: 3, teamleadY: 1,
+};
+
 const STORAGE_KEY = "team-weekly-data";
 
 export function getAllEntries(): CheckInEntry[] {
