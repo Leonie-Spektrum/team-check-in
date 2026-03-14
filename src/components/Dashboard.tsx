@@ -115,27 +115,6 @@ const Dashboard: React.FC<DashboardProps> = ({ refreshKey }) => {
         </div>
       </section>
 
-      {/* Trend Charts */}
-      <section>
-        <h2 className="text-lg font-bold text-foreground mb-3">Verlauf (letzte 8 Wochen)</h2>
-        {TEAM_MEMBERS.map((person) => (
-          <div key={person} className="mb-6">
-            <h3 className="text-sm font-bold text-foreground mb-2">{person}</h3>
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-              {DIMENSIONS.map((dim) => (
-                <MiniTrend
-                  key={dim.key}
-                  label={dim.label}
-                  dimKey={dim.key}
-                  max={dim.max}
-                  weeks={weeks}
-                  values={weeks.map((w) => getVal(person, w, dim.key))}
-                />
-              ))}
-            </div>
-          </div>
-        ))}
-      </section>
     </div>
   );
 };
